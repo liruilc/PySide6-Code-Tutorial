@@ -1,17 +1,16 @@
-"""
-调用cloc代码行数统计工具统计本项目代码量的脚本
-
-https://github.com/AlDanial/cloc
-"""
-
+import os
 import pathlib
 from os import popen
 
-# 配置项
-Git_Ignore_File = "../.gitignore"  # gitignore文件路径，用以排除不需要列目录的文件
-Project_Root_Path = "../"  # 项目根目录路径
-# 配置项完
+# 获取脚本所在目录
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_dir = os.path.dirname(script_dir)
 
+# 配置项
+Git_Ignore_File = os.path.join(project_dir, ".gitignore")
+Project_Root_Path = project_dir
+CLOC_PATH = r"C:\Users\ptylj\.vscode\my_app\cloc-2.04.exe"  # 使用实际的 cloc.exe 路径
+# 配置项完
 
 def cloc(gitignore_file: str = ".gitignore") -> None:
     """
@@ -19,29 +18,36 @@ def cloc(gitignore_file: str = ".gitignore") -> None:
     :param gitignore_file: gitignore文件路径
     :return: None
     """
+    if not os.path.exists(CLOC_PATH):
+        print(f"错误: 未找到 cloc.exe，请确认路径: {CLOC_PATH}")
+        return
+
+    if not os.path.exists(gitignore_file):
+        print(f"错误: 未找到 .gitignore 文件，路径: {gitignore_file}")
+        return
+
+    print(f"正在使用的 .gitignore 文件路径: {gitignore_file}")
+    print(f"项目根目录路径: {Project_Root_Path}")
 
     ignored_dir = ""
     gitignore_file_p = pathlib.Path(gitignore_file)
     with gitignore_file_p.open("r", encoding="UTF-8") as f:
         for dir_name in f.readlines():
-            if not dir_name.startswith("#"):
+            if not dir_name.startswith("#") and dir_name.strip():
                 dir_name = dir_name.replace("/", "").replace("\n", ",")
                 ignored_dir += dir_name
 
-    # 调用cloc，并排除gitignore中的目录，需要提前将cloc添加到系统环境变量
-    cmd = f"cloc --exclude-dir {ignored_dir} {Project_Root_Path}"
+    # 使用完整路径调用cloc
+    cmd = f"\"{CLOC_PATH}\" --exclude-dir {ignored_dir} \"{Project_Root_Path}\""
+    print(f"\n执行的命令: {cmd}\n")
 
-    with popen(cmd) as p:
-        cmd_result = p.read()
-        # 如果cmd执行正常退出则p.close()返回None，失败则返回状态码
-        if p.close():
-            print("cloc调用失败，请检查")
-        else:
-            # 根据cloc返回结果，连续两个换行符后面的内容是需要的信息
-            cloc_result = cmd_result.split("\n\n", 1)[1]
-            print(cloc_result)
-    # TODO 将 self.cloc_result 写入 Markdown 文件
+    try:
+        with popen(cmd) as p:
+            cmd_result = p.read()
+            print(cmd_result)  # 直接打印完整结果
 
+    except Exception as e:
+        print(f"执行过程中出错: {str(e)}")
 
 if __name__ == "__main__":
     cloc(Git_Ignore_File)
