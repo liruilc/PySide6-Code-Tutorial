@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>3D Nesting Display</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <script src="three.min.js"></script>
+    <script src="OrbitControls.js"></script>
+    <script>
+        let scene, camera, renderer, controls;
+        let sheetsData = []; // 将由 Python 填充
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            camera.position.z = 500;
+
+            // 添加环境光和平行光
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight.position.set(0, 1, 1);
+            scene.add(directionalLight);
+        }
+
+        function addSheet(sheetIdx, parts) {
+            const sheetWidth = SHEET_WIDTH, sheetHeight = SHEET_HEIGHT; // 由 Python 传入
+            const sheetGeometry = new THREE.PlaneGeometry(sheetWidth, sheetHeight);
+            const sheetMaterial = new THREE.MeshBasicMaterial({ color: 0xcccccc, side: THREE.DoubleSide });
+            const sheet = new THREE.Mesh(sheetGeometry, sheetMaterial);
+            sheet.position.z = sheetIdx * 10; // 板材沿 Z 轴堆叠
+            scene.add(sheet);
+
+            parts.forEach(part => {
+                const vertices = part.map(([x, y]) => new THREE.Vector2(x, y));
+                const shape = new THREE.Shape(vertices);
+                const geometry = new THREE.ExtrudeGeometry(shape, { depth: 2, bevelEnabled: false });
+                const material = new THREE.MeshPhongMaterial({ color: 0x0000ff });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.z = sheetIdx * 10 + 1; // 部件在板材上方
+                scene.add(mesh);
+
+                // 添加标签
+                const sprite = makeTextSprite(`Sheet ${sheetIdx}`, { x: 10, y: sheetHeight - 20, z: sheetIdx * 10 + 1 });
+                scene.add(sprite);
+            });
+        }
+
+        function makeTextSprite(message, position) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            context.font = "Bold 20px Arial";
+            context.fillStyle = "black";
+            context.fillText(message, 0, 20);
+            const texture = new THREE.Texture(canvas);
+            texture.needsUpdate = true;
+            const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(100, 50, 1);
+            sprite.position.set(position.x, position.y, position.z);
+            return sprite;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // 动态加载数据（由 Python 生成）
+        window.onload = function() {
+            init();
+            sheetsData.forEach((parts, idx) => addSheet(idx, parts));
+            animate();
+        };
+    </script>
+</body>
+</html>

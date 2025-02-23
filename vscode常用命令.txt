@@ -1,0 +1,70 @@
+python -m venv .venv #新建虚拟环境
+.venv\Scripts\activate #激活虚拟环境
+# 在 CMD 中使用
+.venv\Scripts\activate.bat
+
+# 在 PowerShell 中使用
+.venv\Scripts\Activate.ps1
+
+# 在 Git Bash 中使用
+source .venv/Scripts/activate
+source .venv/bin/activate #github codespaces
+deactivate 退出
+
+
+
+git clone 地址 #克隆 ** 仓库
+python -m pip install --upgrade pip # 更新
+
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser #选择 Y（Yes），然后回车  永久允许 PowerShell 运行脚本
+
+pip install -r requirements.txt 
+pip install --no-cache-dir -r requirements.txt   如果安装时 部分库安装失败，可以尝试：
+pip freeze > requirements.txt 如果 requirements.txt 不存在，可以手动生成：
+
+Pylance设置：
+
+点击 VS Code 左下角的齿轮图标（设置）。
+选择 设置，然后搜索 Pylance 或 Python 来查看和调整配置项。
+常见的配置项包括：
+
+python.languageServer: 设置语言服务器的类型。可以选择 Pylance 或 Microsoft Python Language Server（Pylance 推荐）。
+python.analysis.typeCheckingMode: 设置类型检查的严格性（例如 off、basic、strict）。
+Pylance 替代或关闭方式：
+如果你不想使用 Pylance，或者希望替换为其他语言服务器，可以通过以下方式：
+
+打开 VS Code 设置，找到 python.languageServer，然后选择 Microsoft Python Language Server（旧版 Python 语言服务器）或者 Jedi 等其他语言服务器。
+总结：
+Pylance 是 VS Code 中功能强大的 Python 语言服务器插件，特别适合进行大规模 Python 项目开发，具备强大的类型检查和代码智能功能。
+它依赖于 Pyright 提供高效的静态分析和类型推断。
+安装简单，并且能极大地提高开发效率，帮助开发者编写高质量、无错误的 Python 代码
+generate_project_tree.py:
+
+"""主程序入口"""
+    try:
+        project_path = "C:\\Users\\ptylj\\.vscode\\my_app\\Polyboard_7.09a_To_YunXi" # 不同项目变更目录
+
+git config --global user.name "liruilc"
+git config --global user.email "ljrweilc@gmail.com"
+git config --global --list
+
+pip install monkeytype
+# 先运行程序收集类型信息
+monkeytype run your_script.py
+
+# 然后应用类型注解
+monkeytype apply your_module
+
+# 1. 运行程序并收集类型信息
+monkeytype run your_script.py
+# 这会创建 monkeytype.sqlite3 文件来存储收集到的类型信息
+
+# 2. 查看可用的类型提示
+monkeytype list-modules
+
+# 3. 应用类型注解到代码中
+monkeytype apply your_module
+
+pip install pytype
+
+pytype your_file.py
